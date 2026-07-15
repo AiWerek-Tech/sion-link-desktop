@@ -198,6 +198,16 @@ function stopPresentationBridge(): PresentationBridgeStatus {
   presentationBridgeTimer = null
   presentationBridgeConfig = null
   presentationBridgeLastKey = ''
+  
+  try {
+    const framePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-current.png')
+    const nextFramePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-next.png')
+    if (fs.existsSync(framePath)) fs.unlinkSync(framePath)
+    if (fs.existsSync(nextFramePath)) fs.unlinkSync(nextFramePath)
+  } catch (error) {
+    console.warn('[PresenterRemote] Gagal menghapus berkas temporer slide:', error)
+  }
+
   emitBridgeStatus({ active: false, connected: false, message: 'Bridge dihentikan', slideIndex: undefined, totalSlides: undefined })
   return presentationBridgeStatus
 }
@@ -462,7 +472,7 @@ ipcMain.handle('presentation-bridge:start', async (_event, data: { ip: string; p
   presentationBridgeConfig = { ...data, ...getPresentationBridgeIdentity(), requestId: null, bridgeToken: null }
   emitBridgeStatus({ active: true, connected: false, message: 'Mengirim permintaan akses ke operator...' })
   await pollPresentationBridge()
-  presentationBridgeTimer = setInterval(() => void pollPresentationBridge(), 1000)
+  presentationBridgeTimer = setInterval(() => void pollPresentationBridge(), 2000)
   return { ok: true, status: presentationBridgeStatus }
 })
 
