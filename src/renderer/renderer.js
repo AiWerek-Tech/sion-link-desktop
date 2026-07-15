@@ -42,6 +42,7 @@ const historyEmpty = $('history-empty')
 const clearHistoryBtn = $('clear-history-btn')
 
 // ── State ──
+let userInteracted = false
 let autoTimer = null
 let countdown = 0
 let busy = false
@@ -104,7 +105,12 @@ document.querySelectorAll('.tab').forEach(tab => {
 
     // Lazy load
     if (target === 'history') loadHistory()
-    if (target === 'scan') loadLocalIp()
+    if (target === 'scan') {
+      loadLocalIp()
+      if (!isScanning) {
+        setTimeout(() => scanBtn.click(), 50)
+      }
+    }
   })
 })
 
@@ -152,7 +158,7 @@ async function discoverAutomatically() {
     detectedServer.hidden = false
     detectedServer.dataset.ip = server.ip
     detectedServer.dataset.port = String(server.port)
-    if (!ipInput.value.trim()) {
+    if (!ipInput.value.trim() || !userInteracted) {
       ipInput.value = server.ip
       portInput.value = String(server.port)
     }
@@ -207,7 +213,10 @@ function stopAutoConnect() {
   hideOverlay()
 }
 
-const onInteract = () => { if (autoTimer) stopAutoConnect() }
+const onInteract = () => {
+  userInteracted = true
+  if (autoTimer) stopAutoConnect()
+}
 ;[ipInput, portInput, codeInput].forEach(el => el.addEventListener('input', onInteract))
 rememberToggle.addEventListener('change', onInteract)
 overlayCancel.addEventListener('click', (e) => { e.preventDefault(); stopAutoConnect() })
