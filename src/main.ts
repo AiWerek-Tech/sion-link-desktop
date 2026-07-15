@@ -103,6 +103,16 @@ function friendlyPowerPointError(error: unknown): string {
   return clean || 'Bridge gagal menyinkronkan PowerPoint.'
 }
 
+async function runPowerPointNavigation(command: 'NEXT' | 'PREV'): Promise<void> {
+  const action = command === 'NEXT' ? 'Next()' : 'Previous()'
+  const script = `$ErrorActionPreference='Stop'; $ppt=[Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application'); if($ppt.SlideShowWindows.Count -ge 1){ $ppt.SlideShowWindows.Item(1).View.${action} }; @{ok=$true}|ConvertTo-Json -Compress`
+  try {
+    await runPowerShellJson(script)
+  } catch (err) {
+    console.warn('[PresenterRemote] Gagal navigasi PowerPoint secara remote:', err)
+  }
+}
+
 async function ensurePresentationBridgeApproval(): Promise<boolean> {
   if (!presentationBridgeConfig) return false
   const config = presentationBridgeConfig
@@ -131,6 +141,29 @@ async function ensurePresentationBridgeApproval(): Promise<boolean> {
     const body = await response.json() as { status?: string; bridgeToken?: string }
     if (body.status === 'rejected') throw new Error('Permintaan ditolak oleh operator SION Media.')
     config.bridgeToken = body.bridgeToken ?? null
+  } else if (config.bridgeToken) {
+    const query = new URLSearchParams({ requestId: config.requestId || '', deviceId: config.deviceId, pairingSecret: config.pairingSecret })
+    const response = await fetch(`${base}/api/powerpoint-bridge/request?${query}`, { signal: AbortSignal.timeout(5000) })
+    if (response.status === 404) {
+      config.bridgeToken = null
+      config.requestId = null
+      throw new Error('Permintaan persetujuan sudah kedaluwarsa. Mulai ulang jembatan.')
+    }
+    if (response.ok) {
+      const body = await response.json() as { status?: string; pendingCommands?: string[] }
+      if (body.status === 'rejected') {
+        config.bridgeToken = null
+        config.requestId = null
+        throw new Error('Koneksi diputus oleh operator.')
+      }
+      if (body.pendingCommands && body.pendingCommands.length > 0) {
+        for (const cmd of body.pendingCommands) {
+          if (cmd === 'NEXT' || cmd === 'PREV') {
+            await runPowerPointNavigation(cmd)
+          }
+        }
+      }
+    }
   }
   if (!config.bridgeToken) {
     emitBridgeStatus({ active: true, connected: false, message: 'Menunggu persetujuan operator di panel PPT SION Media...' })
@@ -145,8 +178,8 @@ async function pollPresentationBridge(): Promise<boolean> {
   let connected = false
   try {
     if (!(await ensurePresentationBridgeApproval())) return false
-    const framePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-current.png')
-    const nextFramePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-next.png')
+    const framePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-current.jpg')
+    const nextFramePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-next.jpg')
     const escapedFrame = framePath.replace(/'/g, "''")
     const escapedNextFrame = nextFramePath.replace(/'/g, "''")
     
@@ -154,14 +187,14 @@ async function pollPresentationBridge(): Promise<boolean> {
     const lastIndex = presentationBridgeLastKey ? Number(presentationBridgeLastKey.split(':')[1]) : -1
     const escapedLastDeck = lastDeck.replace(/'/g, "''")
 
-    const script = `$ErrorActionPreference='Stop'; $ppt=[Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application'); if($ppt.SlideShowWindows.Count -lt 1){throw 'Jalankan Slide Show PowerPoint terlebih dahulu.'}; $window=$ppt.SlideShowWindows.Item(1); $view=$window.View; $deck=$window.Presentation; $slide=$view.Slide; if($null -eq $slide){throw 'Slide Show belum siap.'}; $idx=[int]$slide.SlideIndex; $deckName=[string]$deck.Name; $changed = ($deckName -ne '${escapedLastDeck}') -or (($idx - 1) -ne ${lastIndex}); $title=''; $notes=@(); $nextPath=''; $nextTitle=''; if($changed){ try{$title=$slide.Shapes.Title.TextFrame.TextRange.Text}catch{}; foreach($shape in $slide.NotesPage.Shapes){try{if($shape.HasTextFrame -and $shape.TextFrame.HasText){$value=[string]$shape.TextFrame.TextRange.Text; if($value.Trim()){$notes += $value}}}catch{}}; if(Test-Path '${escapedFrame}'){Remove-Item -LiteralPath '${escapedFrame}' -Force}; $slide.Export('${escapedFrame}','PNG',1920,1080); if($idx -lt [int]$deck.Slides.Count){$next=$deck.Slides.Item($idx+1); if(Test-Path '${escapedNextFrame}'){Remove-Item -LiteralPath '${escapedNextFrame}' -Force}; $next.Export('${escapedNextFrame}','PNG',1920,1080); $nextPath='${escapedNextFrame}'; try{$nextTitle=$next.Shapes.Title.TextFrame.TextRange.Text}catch{}} }; @{slideIndex=($idx-1);totalSlides=[int]$deck.Slides.Count;title=[string]$title;notes=($notes -join [Environment]::NewLine);framePath='${escapedFrame}';nextFramePath=[string]$nextPath;nextTitle=[string]$nextTitle;deck=$deckName;changed=[bool]$changed}|ConvertTo-Json -Compress`
+    const script = `$ErrorActionPreference='Stop'; $ppt=[Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application'); if($ppt.SlideShowWindows.Count -lt 1){throw 'Jalankan Slide Show PowerPoint terlebih dahulu.'}; $window=$ppt.SlideShowWindows.Item(1); $view=$window.View; $deck=$window.Presentation; $slide=$view.Slide; if($null -eq $slide){throw 'Slide Show belum siap.'}; $idx=[int]$slide.SlideIndex; $deckName=[string]$deck.Name; $changed = ($deckName -ne '${escapedLastDeck}') -or (($idx - 1) -ne ${lastIndex}); $title=''; $notes=@(); $nextPath=''; $nextTitle=''; if($changed){ try{$title=$slide.Shapes.Title.TextFrame.TextRange.Text}catch{}; foreach($shape in $slide.NotesPage.Shapes){try{if($shape.HasTextFrame -and $shape.TextFrame.HasText){$value=[string]$shape.TextFrame.TextRange.Text; if($value.Trim()){$notes += $value}}}catch{}}; if(Test-Path '${escapedFrame}'){Remove-Item -LiteralPath '${escapedFrame}' -Force}; $slide.Export('${escapedFrame}','JPG',1920,1080); if($idx -lt [int]$deck.Slides.Count){$next=$deck.Slides.Item($idx+1); if(Test-Path '${escapedNextFrame}'){Remove-Item -LiteralPath '${escapedNextFrame}' -Force}; $next.Export('${escapedNextFrame}','JPG',1920,1080); $nextPath='${escapedNextFrame}'; try{$nextTitle=$next.Shapes.Title.TextFrame.TextRange.Text}catch{}} }; @{slideIndex=($idx-1);totalSlides=[int]$deck.Slides.Count;title=[string]$title;notes=($notes -join [Environment]::NewLine);framePath='${escapedFrame}';nextFramePath=[string]$nextPath;nextTitle=[string]$nextTitle;deck=$deckName;changed=[bool]$changed}|ConvertTo-Json -Compress`
     const state = await runPowerShellJson(script)
     const key = `${state.deck}:${state.slideIndex}`
     if (key !== presentationBridgeLastKey) {
       if (state.changed) {
-        const imageDataUrl = `data:image/png;base64,${fs.readFileSync(String(state.framePath)).toString('base64')}`
+        const imageDataUrl = `data:image/jpeg;base64,${fs.readFileSync(String(state.framePath)).toString('base64')}`
         const nextImageDataUrl = state.nextFramePath && fs.existsSync(String(state.nextFramePath))
-          ? `data:image/png;base64,${fs.readFileSync(String(state.nextFramePath)).toString('base64')}`
+          ? `data:image/jpeg;base64,${fs.readFileSync(String(state.nextFramePath)).toString('base64')}`
           : null
         const base = `http://${presentationBridgeConfig.ip}:${presentationBridgeConfig.port}`
         const response = await fetch(`${base}/api/presentation-source`, {
@@ -207,8 +240,8 @@ function stopPresentationBridge(): PresentationBridgeStatus {
   presentationBridgeLastKey = ''
   
   try {
-    const framePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-current.png')
-    const nextFramePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-next.png')
+    const framePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-current.jpg')
+    const nextFramePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-next.jpg')
     if (fs.existsSync(framePath)) fs.unlinkSync(framePath)
     if (fs.existsSync(nextFramePath)) fs.unlinkSync(nextFramePath)
   } catch (error) {
