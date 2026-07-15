@@ -1,0 +1,52 @@
+{
+  "name": "sion-link-desktop",
+  "version": "1.1.0-beta.1",
+  "description": "SION Link Native Desktop Companion",
+  "main": "out/main.js",
+  "author": "AiWerek Tech",
+  "scripts": {
+    "build": "tsc",
+    "predev": "npm run build",
+    "dev": "concurrently \"tsc -w\" \"electron .\"",
+    "start": "electron .",
+    "dist": "npm run build && electron-builder"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.9.3",
+    "concurrently": "^8.2.2"
+  },
+  "build": {
+    "appId": "tech.aiwerek.sionlink.desktop",
+    "productName": "SION Link Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "src/renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../sion-media-desktop/build/icon.ico",
+      "artifactName": "SION-Link-Desktop-${version}-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "installerIcon": "../sion-media-desktop/build/icon.ico",
+      "installerLanguages": [
+        "id_ID"
+      ],
+      "language": "1057"
+    }
+  }
+}

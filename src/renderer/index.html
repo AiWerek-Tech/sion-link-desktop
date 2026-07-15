@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self';">
+  <title>SION Link</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Titlebar -->
+  <div class="titlebar">
+    <div class="titlebar-drag">
+      <svg class="titlebar-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="titlebar-text">SION Link</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    <div class="panel">
+
+      <section class="welcome-hero">
+        <div class="welcome-hero__mark">S</div>
+        <div class="welcome-hero__copy">
+          <span class="welcome-hero__eyebrow">SION MEDIA COMPANION</span>
+          <h1>Terhubung tanpa konfigurasi rumit</h1>
+          <p>Kami mencari SION Media secara otomatis di jaringan lokal Anda.</p>
+        </div>
+        <span class="automation-badge"><i></i> Auto discovery</span>
+      </section>
+
+      <!-- ═══ TAB BAR ═══ -->
+      <div class="tab-bar">
+        <button class="tab active" data-tab="connect">
+          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1a9 9 0 100 18A9 9 0 0010 1zm.75 4.75a.75.75 0 00-1.5 0v3.5h-3.5a.75.75 0 000 1.5h3.5v3.5a.75.75 0 001.5 0v-3.5h3.5a.75.75 0 000-1.5h-3.5v-3.5z"/></svg>
+          Koneksi
+        </button>
+        <button class="tab" data-tab="scan">
+          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.577 4.878a.75.75 0 01.919-.53 8 8 0 014.156 4.156.75.75 0 01-1.45.389A6.5 6.5 0 0013.108 5.8a.75.75 0 01-.53-.919zM4.878 12.577a.75.75 0 01-.53.919 8 8 0 004.156 4.156.75.75 0 00.389-1.45A6.5 6.5 0 015.8 13.108a.75.75 0 01-.919-.53zM10 9a1 1 0 100 2 1 1 0 000-2zm-3 1a3 3 0 116 0 3 3 0 01-6 0z" clip-rule="evenodd"/></svg>
+          Cari Server
+        </button>
+        <button class="tab" data-tab="history">
+          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"/></svg>
+          Riwayat
+        </button>
+        <button class="tab" data-tab="bridge">
+          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3.75A1.75 1.75 0 014.75 2h10.5A1.75 1.75 0 0117 3.75v7.5A1.75 1.75 0 0115.25 13H11v2h2.25a.75.75 0 010 1.5h-6.5a.75.75 0 010-1.5H9v-2H4.75A1.75 1.75 0 013 11.25v-7.5z"/></svg>
+          PowerPoint
+        </button>
+      </div>
+
+      <!-- ═══ TAB: CONNECT ═══ -->
+      <div class="tab-content active" id="tab-connect">
+        <form id="connect-form" novalidate autocomplete="off">
+          <div id="error-banner" class="banner banner--error" role="alert" aria-live="polite"></div>
+
+          <div class="section-label">Server Operator</div>
+          <div class="field-row">
+            <div class="field field--grow">
+              <label for="ip" class="field__label">Alamat IP</label>
+              <input type="text" id="ip" class="field__input" placeholder="192.168.1.10" spellcheck="false" required>
+            </div>
+            <div class="field field--port">
+              <label for="port" class="field__label">Port</label>
+              <input type="text" id="port" class="field__input" placeholder="Otomatis" value="41732" inputmode="numeric" required>
+            </div>
+          </div>
+          <button type="button" id="detected-server" class="detected-server" hidden>
+            <span class="card-dot card-dot--online"></span>
+            <span class="detected-server__copy"><strong id="detected-name">SION Media ditemukan</strong><small id="detected-address"></small></span>
+            <span class="detected-server__action">Gunakan</span>
+          </button>
+          <p class="connection-hint">Server dicari otomatis. Anda juga dapat menempelkan link SION atau cukup memasukkan IP.</p>
+
+          <div class="section-label">Autentikasi</div>
+          <div class="field">
+            <label for="code" class="field__label">Kode Akses</label>
+            <input type="text" id="code" class="field__input field__input--code" placeholder="••••••" spellcheck="false" maxlength="12" required>
+          </div>
+          <div class="role-guide" aria-label="Panduan kode akses">
+            <div class="role-guide__item"><strong>Pemateri</strong><span>Navigasi slide saja</span></div>
+            <div class="role-guide__item"><strong>Operator</strong><span>Kontrol penuh &amp; PowerPoint Bridge</span></div>
+            <div class="role-guide__item"><strong>Live</strong><span>Tampilan output bersih</span></div>
+            <div class="role-guide__item"><strong>Stage</strong><span>Notes dan slide berikutnya</span></div>
+          </div>
+
+          <label class="toggle">
+            <input type="checkbox" id="remember" checked>
+            <span class="toggle__track"><span class="toggle__thumb"></span></span>
+            <span class="toggle__label">Ingat koneksi ini</span>
+          </label>
+
+          <button type="submit" id="submit-btn" class="btn-connect">
+            <span class="btn-connect__text">Hubungkan</span>
+            <span class="btn-connect__spinner"></span>
+          </button>
+        </form>
+
+        <button type="button" id="clear-btn" class="link-btn">Hapus data tersimpan</button>
+      </div>
+
+      <!-- ═══ TAB: SCAN ═══ -->
+      <div class="tab-content" id="tab-scan">
+        <div class="scan-hero">
+          <div class="scan-info">
+            <div class="scan-info__label">IP Lokal Anda</div>
+            <div class="scan-info__value" id="local-ip">Mendeteksi...</div>
+          </div>
+          <button type="button" id="scan-btn" class="btn-scan">
+            <svg class="btn-scan__icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.577 4.878a.75.75 0 01.919-.53 8 8 0 014.156 4.156.75.75 0 01-1.45.389A6.5 6.5 0 0013.108 5.8a.75.75 0 01-.53-.919zM4.878 12.577a.75.75 0 01-.53.919 8 8 0 004.156 4.156.75.75 0 00.389-1.45A6.5 6.5 0 015.8 13.108a.75.75 0 01-.919-.53zM10 9a1 1 0 100 2 1 1 0 000-2zm-3 1a3 3 0 116 0 3 3 0 01-6 0z" clip-rule="evenodd"/></svg>
+            <span id="scan-btn-text">Mulai Scan</span>
+          </button>
+        </div>
+
+        <!-- Scan progress -->
+        <div id="scan-progress" class="scan-progress">
+          <div class="scan-progress__bar"><div class="scan-progress__fill" id="scan-fill"></div></div>
+          <div class="scan-progress__text" id="scan-status">Siap untuk scan</div>
+        </div>
+
+        <!-- Scan results -->
+        <div id="scan-results" class="scan-results">
+          <div class="empty-state" id="scan-empty">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <p>Tekan "Mulai Scan" untuk mencari server SION Media di jaringan lokal Anda.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: HISTORY ═══ -->
+      <div class="tab-content" id="tab-history">
+        <div id="history-list" class="history-list">
+          <div class="empty-state" id="history-empty">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <p>Belum ada riwayat koneksi.</p>
+          </div>
+        </div>
+        <button type="button" id="clear-history-btn" class="link-btn">Hapus semua riwayat</button>
+      </div>
+
+      <div class="tab-content" id="tab-bridge">
+        <section class="bridge-hero">
+          <div class="bridge-hero__icon">P</div>
+          <div><h2>PowerPoint Bridge</h2><p>Kirim slide aktif dan speaker notes langsung ke SION Media.</p></div>
+        </section>
+        <div class="bridge-steps">
+          <div><b>1</b><span>Jalankan Slide Show di Microsoft PowerPoint.</span></div>
+          <div><b>2</b><span>Pilih server SION Media di tab Koneksi, lalu klik Mulai.</span></div>
+          <div><b>3</b><span>Operator menyetujui permintaan pada panel PPT SION Media.</span></div>
+        </div>
+        <div class="bridge-status is-waiting">Kontrol Preview dan Live tetap berada di tangan operator SION Media.</div>
+        <button type="button" id="bridge-btn" class="btn-connect">
+          <span class="btn-connect__text">Mulai PowerPoint Bridge</span>
+        </button>
+        <div id="bridge-status" class="bridge-status">Bridge belum aktif.</div>
+      </div>
+
+      <!-- ═══ STATUS BAR ═══ -->
+      <div class="status-bar">
+        <div class="status-bar__left">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-text" id="status-text">Siap</span>
+        </div>
+        <span class="status-bar__right" id="version-label"></span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div class="overlay__card">
+      <div class="overlay__spinner"></div>
+      <h2 id="overlay-title" class="overlay__title">Menghubungkan...</h2>
+      <p id="overlay-subtitle" class="overlay__desc">Memvalidasi koneksi</p>
+      <button type="button" id="overlay-cancel" class="overlay__cancel">Batalkan</button>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
