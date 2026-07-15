@@ -149,38 +149,45 @@ async function pollPresentationBridge(): Promise<boolean> {
     const nextFramePath = path.join(app.getPath('temp'), 'sion-link-powerpoint-next.png')
     const escapedFrame = framePath.replace(/'/g, "''")
     const escapedNextFrame = nextFramePath.replace(/'/g, "''")
-    const script = `$ErrorActionPreference='Stop'; $ppt=[Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application'); if($ppt.SlideShowWindows.Count -lt 1){throw 'Jalankan Slide Show PowerPoint terlebih dahulu.'}; $window=$ppt.SlideShowWindows.Item(1); $view=$window.View; $deck=$window.Presentation; $slide=$view.Slide; if($null -eq $slide){throw 'Slide Show belum siap.'}; $idx=[int]$slide.SlideIndex; $title=''; try{$title=$slide.Shapes.Title.TextFrame.TextRange.Text}catch{}; $notes=@(); foreach($shape in $slide.NotesPage.Shapes){try{if($shape.HasTextFrame -and $shape.TextFrame.HasText){$value=[string]$shape.TextFrame.TextRange.Text; if($value.Trim()){$notes += $value}}}catch{}}; if(Test-Path '${escapedFrame}'){Remove-Item -LiteralPath '${escapedFrame}' -Force}; $slide.Export('${escapedFrame}','PNG',1920,1080); $nextPath=''; $nextTitle=''; if($idx -lt [int]$deck.Slides.Count){$next=$deck.Slides.Item($idx+1); if(Test-Path '${escapedNextFrame}'){Remove-Item -LiteralPath '${escapedNextFrame}' -Force}; $next.Export('${escapedNextFrame}','PNG',1920,1080); $nextPath='${escapedNextFrame}'; try{$nextTitle=$next.Shapes.Title.TextFrame.TextRange.Text}catch{}}; @{slideIndex=($idx-1);totalSlides=[int]$deck.Slides.Count;title=[string]$title;notes=($notes -join [Environment]::NewLine);framePath='${escapedFrame}';nextFramePath=[string]$nextPath;nextTitle=[string]$nextTitle;deck=[string]$deck.Name}|ConvertTo-Json -Compress`
+    
+    const lastDeck = presentationBridgeLastKey ? presentationBridgeLastKey.split(':')[0] : ''
+    const lastIndex = presentationBridgeLastKey ? Number(presentationBridgeLastKey.split(':')[1]) : -1
+    const escapedLastDeck = lastDeck.replace(/'/g, "''")
+
+    const script = `$ErrorActionPreference='Stop'; $ppt=[Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application'); if($ppt.SlideShowWindows.Count -lt 1){throw 'Jalankan Slide Show PowerPoint terlebih dahulu.'}; $window=$ppt.SlideShowWindows.Item(1); $view=$window.View; $deck=$window.Presentation; $slide=$view.Slide; if($null -eq $slide){throw 'Slide Show belum siap.'}; $idx=[int]$slide.SlideIndex; $deckName=[string]$deck.Name; $changed = ($deckName -ne '${escapedLastDeck}') -or (($idx - 1) -ne ${lastIndex}); $title=''; $notes=@(); $nextPath=''; $nextTitle=''; if($changed){ try{$title=$slide.Shapes.Title.TextFrame.TextRange.Text}catch{}; foreach($shape in $slide.NotesPage.Shapes){try{if($shape.HasTextFrame -and $shape.TextFrame.HasText){$value=[string]$shape.TextFrame.TextRange.Text; if($value.Trim()){$notes += $value}}}catch{}}; if(Test-Path '${escapedFrame}'){Remove-Item -LiteralPath '${escapedFrame}' -Force}; $slide.Export('${escapedFrame}','PNG',1920,1080); if($idx -lt [int]$deck.Slides.Count){$next=$deck.Slides.Item($idx+1); if(Test-Path '${escapedNextFrame}'){Remove-Item -LiteralPath '${escapedNextFrame}' -Force}; $next.Export('${escapedNextFrame}','PNG',1920,1080); $nextPath='${escapedNextFrame}'; try{$nextTitle=$next.Shapes.Title.TextFrame.TextRange.Text}catch{}} }; @{slideIndex=($idx-1);totalSlides=[int]$deck.Slides.Count;title=[string]$title;notes=($notes -join [Environment]::NewLine);framePath='${escapedFrame}';nextFramePath=[string]$nextPath;nextTitle=[string]$nextTitle;deck=$deckName;changed=[bool]$changed}|ConvertTo-Json -Compress`
     const state = await runPowerShellJson(script)
     const key = `${state.deck}:${state.slideIndex}`
     if (key !== presentationBridgeLastKey) {
-      const imageDataUrl = `data:image/png;base64,${fs.readFileSync(String(state.framePath)).toString('base64')}`
-      const nextImageDataUrl = state.nextFramePath && fs.existsSync(String(state.nextFramePath))
-        ? `data:image/png;base64,${fs.readFileSync(String(state.nextFramePath)).toString('base64')}`
-        : null
-      const base = `http://${presentationBridgeConfig.ip}:${presentationBridgeConfig.port}`
-      const response = await fetch(`${base}/api/presentation-source`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bridgeToken: presentationBridgeConfig.bridgeToken,
-          deviceId: presentationBridgeConfig.deviceId,
-          deckName: String(state.deck || 'PowerPoint Presentation'),
-          imageDataUrl,
-          nextImageDataUrl,
-          nextTitle: String(state.nextTitle || ''),
-          title: String(state.title || state.deck || 'PowerPoint Live'),
-          notes: String(state.notes || ''),
-          slideIndex: Number(state.slideIndex),
-          totalSlides: Number(state.totalSlides)
-        }),
-        signal: AbortSignal.timeout(15_000)
-      })
-      if (response.status === 401) {
-        presentationBridgeConfig.bridgeToken = null
-        presentationBridgeConfig.requestId = null
-        throw new Error('Persetujuan berakhir. Permintaan baru akan dikirim otomatis.')
+      if (state.changed) {
+        const imageDataUrl = `data:image/png;base64,${fs.readFileSync(String(state.framePath)).toString('base64')}`
+        const nextImageDataUrl = state.nextFramePath && fs.existsSync(String(state.nextFramePath))
+          ? `data:image/png;base64,${fs.readFileSync(String(state.nextFramePath)).toString('base64')}`
+          : null
+        const base = `http://${presentationBridgeConfig.ip}:${presentationBridgeConfig.port}`
+        const response = await fetch(`${base}/api/presentation-source`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bridgeToken: presentationBridgeConfig.bridgeToken,
+            deviceId: presentationBridgeConfig.deviceId,
+            deckName: String(state.deck || 'PowerPoint Presentation'),
+            imageDataUrl,
+            nextImageDataUrl,
+            nextTitle: String(state.nextTitle || ''),
+            title: String(state.title || state.deck || 'PowerPoint Live'),
+            notes: String(state.notes || ''),
+            slideIndex: Number(state.slideIndex),
+            totalSlides: Number(state.totalSlides)
+          }),
+          signal: AbortSignal.timeout(15_000)
+        })
+        if (response.status === 401) {
+          presentationBridgeConfig.bridgeToken = null
+          presentationBridgeConfig.requestId = null
+          throw new Error('Persetujuan berakhir. Permintaan baru akan dikirim otomatis.')
+        }
+        if (!response.ok) throw new Error(`SION Media menolak sumber (HTTP ${response.status})`)
       }
-      if (!response.ok) throw new Error(`SION Media menolak sumber (HTTP ${response.status})`)
       presentationBridgeLastKey = key
     }
     emitBridgeStatus({ active: true, connected: true, message: 'PowerPoint terhubung dan sinkron', slideIndex: Number(state.slideIndex), totalSlides: Number(state.totalSlides) })
@@ -472,7 +479,7 @@ ipcMain.handle('presentation-bridge:start', async (_event, data: { ip: string; p
   presentationBridgeConfig = { ...data, ...getPresentationBridgeIdentity(), requestId: null, bridgeToken: null }
   emitBridgeStatus({ active: true, connected: false, message: 'Mengirim permintaan akses ke operator...' })
   await pollPresentationBridge()
-  presentationBridgeTimer = setInterval(() => void pollPresentationBridge(), 2000)
+  presentationBridgeTimer = setInterval(() => void pollPresentationBridge(), 500)
   return { ok: true, status: presentationBridgeStatus }
 })
 
