@@ -494,14 +494,12 @@ ipcMain.handle('scan-network', async (_event, port?: number) => {
   return scanNetwork(port)
 })
 
-ipcMain.handle('presentation-bridge:status', () => presentationBridgeStatus)
-ipcMain.handle('presentation-bridge:stop', () => stopPresentationBridge())
-ipcMain.handle('presentation-bridge:start', async (_event, data: { ip: string; port: number }) => {
-  if (!data || !/^([a-zA-Z0-9.-]+)$/.test(data.ip) || !Number.isInteger(data.port) || data.port < 1 || data.port > 65535) {
+async function startPresentationBridgeInternal(ip: string, port: number): Promise<{ ok: boolean; error?: string; status?: PresentationBridgeStatus }> {
+  if (!ip || !/^([a-zA-Z0-9.-]+)$/.test(ip) || !Number.isInteger(port) || port < 1 || port > 65535) {
     return { ok: false, error: 'Konfigurasi bridge tidak valid.' }
   }
   try {
-    const discovery = await fetch(`http://${data.ip}:${data.port}/api/discovery`, { signal: AbortSignal.timeout(5000) })
+    const discovery = await fetch(`http://${ip}:${port}/api/discovery`, { signal: AbortSignal.timeout(5000) })
     if (!discovery.ok) return { ok: false, error: `SION Media menolak koneksi (HTTP ${discovery.status}).` }
     const body = await discovery.json() as { capabilities?: string[] }
     if (!body.capabilities?.includes('powerpoint-bridge-approval')) return { ok: false, error: 'Versi SION Media ini belum mendukung persetujuan PowerPoint Bridge.' }
@@ -509,11 +507,17 @@ ipcMain.handle('presentation-bridge:start', async (_event, data: { ip: string; p
     return { ok: false, error: 'SION Media tidak dapat dijangkau. Pastikan server aktif dan berada di LAN yang sama.' }
   }
   stopPresentationBridge()
-  presentationBridgeConfig = { ...data, ...getPresentationBridgeIdentity(), requestId: null, bridgeToken: null }
+  presentationBridgeConfig = { ip, port, ...getPresentationBridgeIdentity(), requestId: null, bridgeToken: null }
   emitBridgeStatus({ active: true, connected: false, message: 'Mengirim permintaan akses ke operator...' })
   await pollPresentationBridge()
   presentationBridgeTimer = setInterval(() => void pollPresentationBridge(), 500)
   return { ok: true, status: presentationBridgeStatus }
+}
+
+ipcMain.handle('presentation-bridge:status', () => presentationBridgeStatus)
+ipcMain.handle('presentation-bridge:stop', () => stopPresentationBridge())
+ipcMain.handle('presentation-bridge:start', async (_event, data: { ip: string; port: number }) => {
+  return startPresentationBridgeInternal(data.ip, data.port)
 })
 
 ipcMain.handle('connect', async (_event, data: SavedConfig) => {
@@ -555,6 +559,14 @@ ipcMain.handle('connect', async (_event, data: SavedConfig) => {
       mainWindow.setSize(1200, 800, true)
       mainWindow.center()
       mainWindow.loadURL(`${base}${body.path}?code=${encodeURIComponent(code)}`)
+
+      // Auto-start PowerPoint Bridge jika login sebagai Pemateri (presenter)
+      if (body.role === 'presenter') {
+        console.log('[PresenterRemote] Auto-starting PowerPoint Bridge because client connected as presenter')
+        setTimeout(() => {
+          void startPresentationBridgeInternal(ip, port)
+        }, 1500)
+      }
     }
     return { ok: true, role: body.role, label: body.label }
   } catch (err: unknown) {
