@@ -1,6 +1,6 @@
 # SION Link Desktop 💻⚡
 
-[![Version](https://img.shields.io/badge/version-1.1.0--beta.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](CHANGELOG.md)
 [![Platform](https://img.shields.io/badge/platform-windows-lightgrey.svg)](#)
 [![Framework](https://img.shields.io/badge/built%20with-Electron%20%7C%20TypeScript-brightgreen.svg)](#)
 

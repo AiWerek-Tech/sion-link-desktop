@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.1.0-beta.1 - 2026-07-13
+## 1.0.0 - 2026-07-15
 
-### Beta pertama SION Link Desktop 1.1
+### Rilis awal SION Link Desktop 1.0
 
 - Auto-discovery SION Media pada LAN dan Wi-Fi tanpa konfigurasi port manual.
 - Smart paste untuk membaca alamat, port, dan kode dari link SION.
@@ -12,4 +12,4 @@
 - PowerPoint Bridge dengan sinkronisasi slide aktif, Speaker Notes, serta opsi Auto Take.
 - Proteksi navigasi origin, blokir pop-up, validasi konfigurasi, dan autentikasi kode Operator.
 
-Release ini masih berada pada tahap **beta testing** dan belum merupakan versi stabil.
+Release ini merupakan rilis stabil pertama dari SION Link Desktop.
