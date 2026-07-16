@@ -503,7 +503,7 @@ function showOverlay(title, sub, cancelable) {
 function hideOverlay() { overlay.classList.remove('is-visible'); overlay.setAttribute('aria-hidden', 'true') }
 
 // ══════════════════════════════════
-// TITLEBAR ACTIONS & MENUS
+// TITLEBAR ACTIONS
 // ══════════════════════════════════
 if ($('action-ppt-status')) {
   $('action-ppt-status').addEventListener('click', () => {
@@ -526,37 +526,5 @@ if ($('action-settings')) {
       tabConnect.click()
       setTimeout(() => ipInput.focus(), 150)
     }
-  })
-}
-
-if ($('action-notifications')) {
-  $('action-notifications').addEventListener('click', () => {
-    showOverlay('Notifikasi', 'Tidak ada notifikasi sistem baru saat ini.', true)
-  })
-}
-
-// Menus Click Simulation for Premium Desktop Feel
-if ($('menu-file')) {
-  $('menu-file').addEventListener('click', () => {
-    showOverlay('File Menu', 'Fitur File sedang dimuat. Anda dapat menekan Ctrl+R untuk me-refresh halaman.', true)
-  })
-}
-
-if ($('menu-view')) {
-  $('menu-view').addEventListener('click', () => {
-    showOverlay('View Menu', 'Gunakan tombol kombinasi Alt+Left/Right untuk navigasi tab cepat.', true)
-  })
-}
-
-if ($('menu-tools')) {
-  $('menu-tools').addEventListener('click', () => {
-    const tabScan = document.querySelector('[data-tab="scan"]')
-    if (tabScan) tabScan.click()
-  })
-}
-
-if ($('menu-help')) {
-  $('menu-help').addEventListener('click', () => {
-    showOverlay('Tentang SION Link', 'SION Link Desktop v1.0.0\n\nAplikasi companion resmi SION Presenter untuk mempermudah koneksi slide dan operator.\n\n© 2026 AiWerek-Tech', true)
   })
 }
