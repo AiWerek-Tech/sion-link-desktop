@@ -4,6 +4,8 @@ import * as fs from 'fs'
 import * as os from 'os'
 import { spawn } from 'child_process'
 import { randomBytes } from 'crypto'
+import { PowerPointBridgeController } from './powerpoint/PowerPointBridgeController'
+import type { PresentationBridgeStatus as AgentPresentationBridgeStatus } from './powerpoint/types'
 
 let mainWindow: BrowserWindow | null = null
 let isOnConnectionScreen = true
@@ -20,6 +22,7 @@ let presentationBridgeConfig: {
   requestId: string | null
   bridgeToken: string | null
 } | null = null
+let presentationBridgeController: PowerPointBridgeController | null = null
 const configPath = path.join(app.getPath('userData'), 'connection-config.json')
 const historyPath = path.join(app.getPath('userData'), 'connection-history.json')
 const bridgeIdentityPath = path.join(app.getPath('userData'), 'powerpoint-bridge-identity.json')
@@ -42,6 +45,7 @@ interface HistoryEntry {
 interface PresentationBridgeStatus {
   active: boolean
   connected: boolean
+  engine?: 'dotnet_agent' | 'legacy_powershell'
   message: string
   slideIndex?: number
   totalSlides?: number
@@ -72,6 +76,21 @@ let presentationBridgeStatus: PresentationBridgeStatus = {
 
 function emitBridgeStatus(patch: Partial<PresentationBridgeStatus>): void {
   presentationBridgeStatus = { ...presentationBridgeStatus, ...patch, updatedAt: Date.now() }
+  mainWindow?.webContents.send('presentation-bridge:status', presentationBridgeStatus)
+}
+
+function emitAgentBridgeStatus(status: AgentPresentationBridgeStatus): void {
+  presentationBridgeStatus = {
+    active: status.active,
+    connected: status.connected,
+    engine: status.engine,
+    message: status.slideIndex !== undefined && status.totalSlides !== undefined
+      ? `${status.message} · Slide ${status.slideIndex + 1}/${status.totalSlides}`
+      : status.message,
+    slideIndex: status.slideIndex,
+    totalSlides: status.totalSlides,
+    updatedAt: status.updatedAt
+  }
   mainWindow?.webContents.send('presentation-bridge:status', presentationBridgeStatus)
 }
 
@@ -234,6 +253,10 @@ async function pollPresentationBridge(): Promise<boolean> {
 }
 
 function stopPresentationBridge(): PresentationBridgeStatus {
+  if (presentationBridgeController) {
+    presentationBridgeController.stop()
+    presentationBridgeController = null
+  }
   if (presentationBridgeTimer) clearInterval(presentationBridgeTimer)
   presentationBridgeTimer = null
   presentationBridgeConfig = null
@@ -476,6 +499,12 @@ app.on('window-all-closed', () => {
 })
 
 app.on('will-quit', () => globalShortcut.unregisterAll())
+app.on('before-quit', () => {
+  if (presentationBridgeController) {
+    presentationBridgeController.stop()
+    presentationBridgeController = null
+  }
+})
 
 // ── IPC Handlers ──
 ipcMain.handle('get-saved-config', () => getSavedConfig())
@@ -494,7 +523,11 @@ ipcMain.handle('scan-network', async (_event, port?: number) => {
   return scanNetwork(port)
 })
 
-async function startPresentationBridgeInternal(ip: string, port: number): Promise<{ ok: boolean; error?: string; status?: PresentationBridgeStatus }> {
+async function startPresentationBridgeInternal(
+  ip: string,
+  port: number,
+  engine: 'dotnet_agent' | 'legacy_powershell' = 'dotnet_agent'
+): Promise<{ ok: boolean; error?: string; status?: PresentationBridgeStatus }> {
   if (!ip || !/^([a-zA-Z0-9.-]+)$/.test(ip) || !Number.isInteger(port) || port < 1 || port > 65535) {
     return { ok: false, error: 'Konfigurasi bridge tidak valid.' }
   }
@@ -508,16 +541,59 @@ async function startPresentationBridgeInternal(ip: string, port: number): Promis
   }
   stopPresentationBridge()
   presentationBridgeConfig = { ip, port, ...getPresentationBridgeIdentity(), requestId: null, bridgeToken: null }
-  emitBridgeStatus({ active: true, connected: false, message: 'Mengirim permintaan akses ke operator...' })
-  await pollPresentationBridge()
-  presentationBridgeTimer = setInterval(() => void pollPresentationBridge(), 500)
+  emitBridgeStatus({ active: true, connected: false, engine: 'dotnet_agent', message: 'Mengirim permintaan akses ke operator...' })
+  try {
+    if (!(await ensurePresentationBridgeApproval()) || !presentationBridgeConfig.bridgeToken) {
+      presentationBridgeTimer = setInterval(() => {
+        void (async () => {
+          if (!presentationBridgeConfig || presentationBridgeController) return
+          try {
+            if (!(await ensurePresentationBridgeApproval()) || !presentationBridgeConfig.bridgeToken) return
+            if (presentationBridgeTimer) clearInterval(presentationBridgeTimer)
+            presentationBridgeTimer = null
+            presentationBridgeController = new PowerPointBridgeController(emitAgentBridgeStatus)
+            await presentationBridgeController.start({
+              ip,
+              port,
+              deviceId: presentationBridgeConfig.deviceId,
+              bridgeToken: presentationBridgeConfig.bridgeToken
+            })
+          } catch (error) {
+            emitBridgeStatus({ active: true, connected: false, engine: 'dotnet_agent', message: friendlyPowerPointError(error) })
+          }
+        })()
+      }, 1000)
+      return { ok: true, status: presentationBridgeStatus }
+    }
+    presentationBridgeController = new PowerPointBridgeController(emitAgentBridgeStatus)
+    await presentationBridgeController.start({
+      ip,
+      port,
+      deviceId: presentationBridgeConfig.deviceId,
+      bridgeToken: presentationBridgeConfig.bridgeToken
+    })
+  } catch (error) {
+    console.warn('[PresentationBridge] Agent engine failed; legacy fallback is available:', error)
+    if (engine !== 'legacy_powershell') {
+      emitBridgeStatus({
+        active: true,
+        connected: false,
+        engine: 'dotnet_agent',
+        message: `${friendlyPowerPointError(error)} Legacy PowerShell tersedia di Diagnostics.`
+      })
+      return { ok: true, status: presentationBridgeStatus }
+    }
+    emitBridgeStatus({ active: true, connected: false, engine: 'legacy_powershell', message: 'Mode legacy PowerShell aktif. Sinkronisasi akan lebih lambat.' })
+    await pollPresentationBridge()
+    presentationBridgeTimer = setInterval(() => void pollPresentationBridge(), 500)
+  }
   return { ok: true, status: presentationBridgeStatus }
 }
 
 ipcMain.handle('presentation-bridge:status', () => presentationBridgeStatus)
 ipcMain.handle('presentation-bridge:stop', () => stopPresentationBridge())
-ipcMain.handle('presentation-bridge:start', async (_event, data: { ip: string; port: number }) => {
-  return startPresentationBridgeInternal(data.ip, data.port)
+ipcMain.handle('presentation-bridge:start', async (_event, data: { ip: string; port: number; engine?: 'dotnet_agent' | 'legacy_powershell' }) => {
+  return startPresentationBridgeInternal(data.ip, data.port, data.engine === 'legacy_powershell' ? 'legacy_powershell' : 'dotnet_agent')
 })
 
 ipcMain.handle('connect', async (_event, data: SavedConfig) => {

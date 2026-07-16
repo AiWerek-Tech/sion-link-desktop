@@ -9,7 +9,9 @@
     "predev": "npm run build",
     "dev": "concurrently \"tsc -w\" \"electron .\"",
     "start": "electron .",
-    "dist": "npm run build && electron-builder"
+    "agent:publish": "dotnet publish ../sion-powerpoint-agent/Sion.PowerPoint.Agent.csproj -c Release -r win-x64 --self-contained true",
+    "test:powerpoint-agent:manual": "npm run agent:publish && node scripts/test-powerpoint-agent-manual.js",
+    "dist": "npm run build && npm run agent:publish && electron-builder"
   },
   "dependencies": {},
   "devDependencies": {
@@ -27,7 +29,17 @@
     "files": [
       "out/**/*",
       "src/renderer/**/*",
+      "resources/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../sion-powerpoint-agent/bin/Release/net8.0-windows/win-x64/publish",
+        "to": "powerpoint-agent",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "win": {
       "target": "nsis",

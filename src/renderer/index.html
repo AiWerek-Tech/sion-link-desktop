@@ -15,7 +15,7 @@
   <!-- Titlebar -->
   <div class="titlebar">
     <div class="titlebar-drag">
-      <svg class="titlebar-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg class="titlebar-icon" viewBox="0 0 512 512" style="width:16px;height:16px;margin-right:6px;flex-shrink:0;"><path d="M257 78c-44 56-30 96-79 145-29 29-42 62-42 99 0 74 55 126 120 126 72 0 128-51 128-126 0-56-32-101-74-139 5 34-5 62-31 84 4-68-10-130-22-189Z" fill="#818cf8"/><path d="M255 226c-21 30-51 54-51 96 0 33 24 57 54 57 34 0 59-24 59-57 0-33-21-57-40-78 1 27-8 47-28 62 4-32 2-56 6-80Z" fill="#ffffff"/></svg>
       <span class="titlebar-text">SION Link</span>
     </div>
   </div>
@@ -25,7 +25,19 @@
     <div class="panel">
 
       <section class="welcome-hero">
-        <div class="welcome-hero__mark">S</div>
+        <div class="welcome-hero__mark" style="background:transparent;box-shadow:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width:100%;height:100%;">
+            <defs>
+              <linearGradient id="flame" x1="208" y1="104" x2="306" y2="392" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#facc15"/>
+                <stop offset="0.55" stop-color="#38bdf8"/>
+                <stop offset="1" stop-color="#2563eb"/>
+              </linearGradient>
+            </defs>
+            <path d="M257 78c-44 56-30 96-79 145-29 29-42 62-42 99 0 74 55 126 120 126 72 0 128-51 128-126 0-56-32-101-74-139 5 34-5 62-31 84 4-68-10-130-22-189Z" fill="url(#flame)"/>
+            <path d="M255 226c-21 30-51 54-51 96 0 33 24 57 54 57 34 0 59-24 59-57 0-33-21-57-40-78 1 27-8 47-28 62 4-32 2-56 6-80Z" fill="#f8fafc"/>
+          </svg>
+        </div>
         <div class="welcome-hero__copy">
           <span class="welcome-hero__eyebrow">SION MEDIA COMPANION</span>
           <h1>Terhubung tanpa konfigurasi rumit</h1>
@@ -158,6 +170,12 @@
           <div><b>3</b><span>Operator menyetujui permintaan pada panel PPT SION Media.</span></div>
         </div>
         <div class="bridge-status is-waiting">Kontrol Preview dan Live tetap berada di tangan operator SION Media.</div>
+        <div class="bridge-diagnostics">
+          <div class="bridge-diagnostics__title">Advanced Diagnostics</div>
+          <label><input type="radio" name="bridge-engine" value="dotnet_agent" checked> Modern .NET Agent <small>Recommended</small></label>
+          <label><input type="radio" name="bridge-engine" value="legacy_powershell"> Legacy PowerShell <small>Compatibility mode</small></label>
+          <p>Compatibility mode lebih lambat dan hanya digunakan jika Agent modern tidak dapat berjalan.</p>
+        </div>
         <button type="button" id="bridge-btn" class="btn-connect">
           <span class="btn-connect__text">Mulai PowerPoint Bridge</span>
         </button>

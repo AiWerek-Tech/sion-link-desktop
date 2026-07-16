@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('sionLink', {
   getLocalIp: () => ipcRenderer.invoke('get-local-ip'),
   getStartupNotice: () => ipcRenderer.invoke('get-startup-notice'),
   scanNetwork: (port: number) => ipcRenderer.invoke('scan-network', port),
-  startPresentationBridge: (data: { ip: string; port: number }) =>
+  startPresentationBridge: (data: { ip: string; port: number; engine?: 'dotnet_agent' | 'legacy_powershell' }) =>
     ipcRenderer.invoke('presentation-bridge:start', data),
   stopPresentationBridge: () => ipcRenderer.invoke('presentation-bridge:stop'),
   getPresentationBridgeStatus: () => ipcRenderer.invoke('presentation-bridge:status'),

@@ -23,6 +23,7 @@ const statusDot = $('status-dot')
 const statusText = $('status-text')
 const bridgeBtn = $('bridge-btn')
 const bridgeStatus = $('bridge-status')
+const bridgeEngineInputs = () => Array.from(document.querySelectorAll('input[name="bridge-engine"]'))
 const detectedServer = $('detected-server')
 const detectedName = $('detected-name')
 const detectedAddress = $('detected-address')
@@ -88,7 +89,8 @@ bridgeBtn.addEventListener('click', async () => {
     showError('Pilih server SION Media atau isi IP dan port sebelum memulai bridge.')
     return
   }
-  const result = await api.startPresentationBridge({ ip, port })
+  const selectedEngine = bridgeEngineInputs().find((input) => input.checked)?.value || 'dotnet_agent'
+  const result = await api.startPresentationBridge({ ip, port, engine: selectedEngine })
   if (!result?.ok) showError(result?.error || 'Bridge gagal dimulai.')
 })
 
