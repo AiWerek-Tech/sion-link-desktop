@@ -1000,26 +1000,20 @@ form {
   align-items: center;
   gap: 16px;
   padding: 18px;
-  border: 1px solid rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(224, 62, 21, 0.16);
   border-radius: var(--r-md);
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(255, 255, 255, 0.005) 100%);
+  background: linear-gradient(135deg, rgba(224, 62, 21, 0.08) 0%, rgba(255, 255, 255, 0.005) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-.bridge-hero__icon {
-  display: grid;
-  place-items: center;
+.bridge-hero__logo {
   width: 44px;
   height: 44px;
+  object-fit: contain;
   flex: 0 0 auto;
-  border-radius: 12px;
-  background: #dc2626;
-  color: white;
-  font-size: 20px;
-  font-weight: 900;
-  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+  filter: drop-shadow(0 4px 12px rgba(224, 62, 21, 0.3));
 }
 
 .bridge-hero h2 {
