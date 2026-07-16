@@ -49,19 +49,19 @@
       <!-- ═══ TAB BAR ═══ -->
       <div class="tab-bar">
         <button class="tab active" data-tab="connect">
-          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1a9 9 0 100 18A9 9 0 0010 1zm.75 4.75a.75.75 0 00-1.5 0v3.5h-3.5a.75.75 0 000 1.5h3.5v3.5a.75.75 0 001.5 0v-3.5h3.5a.75.75 0 000-1.5h-3.5v-3.5z"/></svg>
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
           Koneksi
         </button>
         <button class="tab" data-tab="scan">
-          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.577 4.878a.75.75 0 01.919-.53 8 8 0 014.156 4.156.75.75 0 01-1.45.389A6.5 6.5 0 0013.108 5.8a.75.75 0 01-.53-.919zM4.878 12.577a.75.75 0 01-.53.919 8 8 0 004.156 4.156.75.75 0 00.389-1.45A6.5 6.5 0 015.8 13.108a.75.75 0 01-.919-.53zM10 9a1 1 0 100 2 1 1 0 000-2zm-3 1a3 3 0 116 0 3 3 0 01-6 0z" clip-rule="evenodd"/></svg>
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m16.2 16.2-3.8-3.8"></path><circle cx="12" cy="12" r="3"></circle></svg>
           Cari Server
         </button>
         <button class="tab" data-tab="history">
-          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"/></svg>
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           Riwayat
         </button>
         <button class="tab" data-tab="bridge">
-          <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3.75A1.75 1.75 0 014.75 2h10.5A1.75 1.75 0 0117 3.75v7.5A1.75 1.75 0 0115.25 13H11v2h2.25a.75.75 0 010 1.5h-6.5a.75.75 0 010-1.5H9v-2H4.75A1.75 1.75 0 013 11.25v-7.5z"/></svg>
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
           PowerPoint
         </button>
       </div>
@@ -95,10 +95,22 @@
             <input type="text" id="code" class="field__input field__input--code" placeholder="••••••" spellcheck="false" maxlength="12" required>
           </div>
           <div class="role-guide" aria-label="Panduan kode akses">
-            <div class="role-guide__item"><strong>Pemateri</strong><span>Slide show &amp; Auto PowerPoint Bridge</span></div>
-            <div class="role-guide__item"><strong>Operator</strong><span>Kontrol penuh SION Media</span></div>
-            <div class="role-guide__item"><strong>Live</strong><span>Tampilan output bersih</span></div>
-            <div class="role-guide__item"><strong>Stage</strong><span>Notes dan slide berikutnya</span></div>
+            <div class="role-guide__item">
+              <strong style="display: flex; align-items: center; gap: 6px;"><span class="card-dot" style="background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);"></span>Pemateri</strong>
+              <span>Slide show &amp; Auto PowerPoint Bridge</span>
+            </div>
+            <div class="role-guide__item">
+              <strong style="display: flex; align-items: center; gap: 6px;"><span class="card-dot" style="background: #a855f7; box-shadow: 0 0 6px rgba(168, 85, 247, 0.4);"></span>Operator</strong>
+              <span>Kontrol penuh SION Media</span>
+            </div>
+            <div class="role-guide__item">
+              <strong style="display: flex; align-items: center; gap: 6px;"><span class="card-dot" style="background: #06b6d4; box-shadow: 0 0 6px rgba(6, 182, 212, 0.4);"></span>Live</strong>
+              <span>Tampilan output bersih</span>
+            </div>
+            <div class="role-guide__item">
+              <strong style="display: flex; align-items: center; gap: 6px;"><span class="card-dot" style="background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);"></span>Stage</strong>
+              <span>Notes dan slide berikutnya</span>
+            </div>
           </div>
 
           <label class="toggle">
@@ -131,6 +143,17 @@
             <svg class="btn-scan__icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.577 4.878a.75.75 0 01.919-.53 8 8 0 014.156 4.156.75.75 0 01-1.45.389A6.5 6.5 0 0013.108 5.8a.75.75 0 01-.53-.919zM4.878 12.577a.75.75 0 01-.53.919 8 8 0 004.156 4.156.75.75 0 00.389-1.45A6.5 6.5 0 015.8 13.108a.75.75 0 01-.919-.53zM10 9a1 1 0 100 2 1 1 0 000-2zm-3 1a3 3 0 116 0 3 3 0 01-6 0z" clip-rule="evenodd"/></svg>
             <span id="scan-btn-text">Mulai Scan</span>
           </button>
+        </div>
+
+        <!-- Radar scanner visual widget -->
+        <div id="radar-widget" class="radar-scanner">
+          <div class="radar-sweep-container">
+            <div class="radar-sweep"></div>
+            <div class="radar-ring-1"></div>
+            <div class="radar-ring-2"></div>
+            <div class="radar-dot-ping"></div>
+          </div>
+          <div class="scan-progress__text" style="color: var(--text-2); font-weight: 600;">Sedang memindai jaringan...</div>
         </div>
 
         <!-- Scan progress -->

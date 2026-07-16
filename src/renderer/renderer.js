@@ -36,6 +36,7 @@ const scanFill = $('scan-fill')
 const scanStatus = $('scan-status')
 const scanResults = $('scan-results')
 const scanEmpty = $('scan-empty')
+const radarWidget = $('radar-widget')
 
 // History
 const historyList = $('history-list')
@@ -304,6 +305,7 @@ scanBtn.addEventListener('click', async () => {
   scanBtn.disabled = true
   scanBtnText.textContent = 'Scanning...'
   scanEmpty.style.display = 'none'
+  if (radarWidget) radarWidget.classList.add('is-active')
   scanFill.style.width = '0%'
   scanStatus.textContent = 'Memindai jaringan lokal...'
   setStatus('scanning', 'Memindai jaringan...')
@@ -343,6 +345,7 @@ scanBtn.addEventListener('click', async () => {
     scanBtn.classList.remove('is-scanning')
     scanBtn.disabled = false
     scanBtnText.textContent = 'Scan Ulang'
+    if (radarWidget) radarWidget.classList.remove('is-active')
     if (removeScanListener) { removeScanListener(); removeScanListener = null }
   }
 })
