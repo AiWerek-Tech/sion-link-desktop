@@ -20,14 +20,14 @@
   --text-2: #9ca3af;
   --text-3: #4b5563;
   
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --accent-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+  --accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%);
   
-  --accent-glow: rgba(99, 102, 241, 0.22);
-  --accent-glow-s: rgba(139, 92, 246, 0.38);
-  --accent-surface: rgba(99, 102, 241, 0.09);
+  --accent-glow: rgba(14, 165, 233, 0.25);
+  --accent-glow-s: rgba(37, 99, 235, 0.38);
+  --accent-surface: rgba(14, 165, 233, 0.1);
   
   --error: #ef4444;
   --error-surface: rgba(239, 68, 68, 0.08);
@@ -105,10 +105,14 @@ body {
 
 .titlebar-text {
   font-size: 12px;
-  font-weight: 700;
-  color: var(--text-2);
+  font-weight: 800;
+  color: #ffffff;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
+}
+
+.titlebar-text span {
+  color: #38bdf8;
+  font-weight: 800;
 }
 
 /* ══ CONTENT ══ */
@@ -576,7 +580,7 @@ form {
   align-self: center;
   padding: 12px 36px;
   margin: 18px auto 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef, #6366f1);
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8, #2563eb, #0ea5e9);
   background-size: 300% auto;
   animation: gradientMove 5s ease infinite;
   border: none;
