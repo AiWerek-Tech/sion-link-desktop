@@ -572,31 +572,30 @@ form {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: auto;
-  min-width: 200px;
-  max-width: fit-content;
-  height: 38px;
-  padding: 0 28px;
+  width: fit-content;
+  align-self: center;
+  padding: 12px 36px;
   margin: 18px auto 8px;
-  background: var(--accent);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef, #6366f1);
+  background-size: 300% auto;
+  animation: gradientMove 5s ease infinite;
+  border: none;
+  border-radius: 99px;
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: all var(--fast) var(--ease);
+  transition: all var(--normal) var(--ease);
   box-shadow: 
-    0 2px 8px rgba(99, 102, 241, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  letter-spacing: 0.3px;
+    0 4px 16px var(--accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.5px;
 }
 
 .btn-connect:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.38);
+  background-position: right center;
+  box-shadow: 0 6px 24px var(--accent-glow-s);
   transform: translateY(-1px);
 }
 
@@ -725,10 +724,10 @@ form {
   height: 36px;
   background: var(--accent-surface);
   border: 1px solid rgba(99, 102, 241, 0.18);
-  border-radius: 6px;
+  border-radius: 99px;
   color: #a5b4fc;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
   transition: all var(--fast) var(--ease);
