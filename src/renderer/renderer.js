@@ -76,6 +76,18 @@ api.onPresentationBridgeStatus?.((status) => {
   bridgeStatus.classList.toggle('is-connected', status.connected === true)
   bridgeStatus.classList.toggle('is-waiting', status.active === true && status.connected !== true)
   setStatus(status.connected ? 'connected' : status.active ? 'connecting' : 'ready', status.message)
+
+  const tPptText = $('titlebar-ppt-text')
+  const tPptBtn = $('action-ppt-status')
+  if (tPptText) {
+    if (bridgeActive) {
+      tPptText.textContent = status.connected ? 'PPT ON' : 'PPT WAIT'
+      if (tPptBtn) tPptBtn.style.color = status.connected ? '#10b981' : '#f59e0b'
+    } else {
+      tPptText.textContent = 'PPT OFF'
+      if (tPptBtn) tPptBtn.style.color = ''
+    }
+  }
 })
 
 bridgeBtn.addEventListener('click', async () => {
@@ -452,8 +464,21 @@ clearHistoryBtn.addEventListener('click', async () => {
 // ══════════════════════════════════
 function setStatus(state, text) {
   statusDot.className = 'status-dot'
-  if (state === 'connected' || state === 'ready') statusDot.classList.add('online')
-  else if (state === 'scanning' || state === 'connecting') statusDot.classList.add('scanning')
+  const tConnDot = $('titlebar-conn-dot')
+  const tConnText = $('titlebar-conn-text')
+  
+  if (state === 'connected' || state === 'ready') {
+    statusDot.classList.add('online')
+    if (tConnDot) { tConnDot.className = 'action-dot action-dot--online' }
+    if (tConnText) { tConnText.textContent = state === 'connected' ? 'Connected' : 'Ready' }
+  } else if (state === 'scanning' || state === 'connecting') {
+    statusDot.classList.add('scanning')
+    if (tConnDot) { tConnDot.className = 'action-dot action-dot--scanning' }
+    if (tConnText) { tConnText.textContent = state === 'scanning' ? 'Scanning...' : 'Connecting...' }
+  } else {
+    if (tConnDot) { tConnDot.className = 'action-dot action-dot--offline' }
+    if (tConnText) { tConnText.textContent = 'Disconnected' }
+  }
   statusText.textContent = text
 }
 
@@ -476,3 +501,62 @@ function showOverlay(title, sub, cancelable) {
   overlay.classList.add('is-visible'); overlay.setAttribute('aria-hidden', 'false')
 }
 function hideOverlay() { overlay.classList.remove('is-visible'); overlay.setAttribute('aria-hidden', 'true') }
+
+// ══════════════════════════════════
+// TITLEBAR ACTIONS & MENUS
+// ══════════════════════════════════
+if ($('action-ppt-status')) {
+  $('action-ppt-status').addEventListener('click', () => {
+    const tabBridge = document.querySelector('[data-tab="bridge"]')
+    if (tabBridge) tabBridge.click()
+  })
+}
+
+if ($('action-conn-status')) {
+  $('action-conn-status').addEventListener('click', () => {
+    const tabConnect = document.querySelector('[data-tab="connect"]')
+    if (tabConnect) tabConnect.click()
+  })
+}
+
+if ($('action-settings')) {
+  $('action-settings').addEventListener('click', () => {
+    const tabConnect = document.querySelector('[data-tab="connect"]')
+    if (tabConnect) {
+      tabConnect.click()
+      setTimeout(() => ipInput.focus(), 150)
+    }
+  })
+}
+
+if ($('action-notifications')) {
+  $('action-notifications').addEventListener('click', () => {
+    showOverlay('Notifikasi', 'Tidak ada notifikasi sistem baru saat ini.', true)
+  })
+}
+
+// Menus Click Simulation for Premium Desktop Feel
+if ($('menu-file')) {
+  $('menu-file').addEventListener('click', () => {
+    showOverlay('File Menu', 'Fitur File sedang dimuat. Anda dapat menekan Ctrl+R untuk me-refresh halaman.', true)
+  })
+}
+
+if ($('menu-view')) {
+  $('menu-view').addEventListener('click', () => {
+    showOverlay('View Menu', 'Gunakan tombol kombinasi Alt+Left/Right untuk navigasi tab cepat.', true)
+  })
+}
+
+if ($('menu-tools')) {
+  $('menu-tools').addEventListener('click', () => {
+    const tabScan = document.querySelector('[data-tab="scan"]')
+    if (tabScan) tabScan.click()
+  })
+}
+
+if ($('menu-help')) {
+  $('menu-help').addEventListener('click', () => {
+    showOverlay('Tentang SION Link', 'SION Link Desktop v1.0.0\n\nAplikasi companion resmi SION Presenter untuk mempermudah koneksi slide dan operator.\n\n© 2026 AiWerek-Tech', true)
+  })
+}
