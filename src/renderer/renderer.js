@@ -67,7 +67,7 @@ const api = window.sionLink || {
   getSavedConfig: async () => { try { return JSON.parse(localStorage.getItem('sl') || 'null') } catch { return null } },
   connect: async (d) => { await new Promise(r => setTimeout(r, 1200)); return { ok: false, error: 'Mode simulasi.' } },
   clearSavedConfig: async () => { localStorage.removeItem('sl'); return true },
-  getAppVersion: async () => '1.0.0',
+  getAppVersion: async () => '0.5.0-beta.1',
   getHistory: async () => [],
   clearHistory: async () => true,
   getLocalIp: async () => '192.168.1.x',
