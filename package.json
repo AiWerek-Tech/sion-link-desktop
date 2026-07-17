@@ -11,6 +11,7 @@
     "start": "electron .",
     "agent:publish": "dotnet publish ../sion-powerpoint-agent/Sion.PowerPoint.Agent.csproj -c Release -r win-x64 --self-contained true",
     "test:powerpoint-agent:manual": "npm run agent:publish && node scripts/test-powerpoint-agent-manual.js",
+    "test:bridge-ui": "node scripts/bridge-ui-contract.test.js",
     "dist": "npm run build && npm run agent:publish && electron-builder"
   },
   "dependencies": {},
@@ -20,10 +21,11 @@
     "typescript": "^5.9.3",
     "concurrently": "^8.2.2"
   },
-  "build": {
+    "build": {
     "appId": "tech.aiwerek.sionlink.desktop",
     "productName": "SION Link Desktop",
     "directories": {
+      "buildResources": "build",
       "output": "dist"
     },
     "files": [
@@ -43,10 +45,13 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "../sion-media-desktop/build/icon.ico",
+      "icon": "build/icon.ico",
       "artifactName": "SION-Link-Desktop-${version}-Setup.${ext}"
     },
     "nsis": {
+      "artifactName": "SION-Link-Desktop-${version}-Setup.${ext}",
+      "shortcutName": "SION Link Desktop",
+      "uninstallDisplayName": "SION Link Desktop",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
@@ -54,7 +59,12 @@
       "createStartMenuShortcut": true,
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
-      "installerIcon": "../sion-media-desktop/build/icon.ico",
+      "installerIcon": "build/icon.ico",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/uninstallerSidebar.bmp",
+      "installerHeader": "build/installerHeader.bmp",
+      "include": "build/installer.nsh",
+      "displayLanguageSelector": false,
       "installerLanguages": [
         "id_ID"
       ],

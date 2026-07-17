@@ -25,6 +25,7 @@ export interface PresentationBridgeStatus {
   totalSlides?: number
   latencyMs?: number
   cacheHit?: boolean
+  previewDataUrl?: string
   updatedAt: number
 }
 

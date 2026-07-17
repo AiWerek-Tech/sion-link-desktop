@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('sionLink', {
     ipcRenderer.invoke('presentation-bridge:start', data),
   stopPresentationBridge: () => ipcRenderer.invoke('presentation-bridge:stop'),
   getPresentationBridgeStatus: () => ipcRenderer.invoke('presentation-bridge:status'),
+  getPresentationDiagnostics: () => ipcRenderer.invoke('presentation-bridge:diagnostics'),
   onPresentationBridgeStatus: (cb: (data: unknown) => void) => {
     const listener = (_e: unknown, data: unknown) => cb(data)
     ipcRenderer.on('presentation-bridge:status', listener)

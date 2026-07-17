@@ -35,9 +35,10 @@ export class PowerPointBridgeController {
   constructor(private readonly emitStatus: (status: PresentationBridgeStatus) => void) {
     this.agent.on('message', (message: AgentJsonMessage) => {
       this.handleAgentMessage(message)
-      this.router.sendJson(message)
+      if (message.messageType !== 'FRAME_META') this.router.sendJson(message)
     })
     this.agent.on('frame', (meta: AgentJsonMessage | null, bytes: Buffer) => {
+      this.patch({ previewDataUrl: `data:image/jpeg;base64,${bytes.toString('base64')}` })
       if (meta) this.router.sendJson(meta)
       this.router.sendBinary(bytes)
     })

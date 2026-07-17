@@ -11,20 +11,44 @@ export class PowerPointAgentClient extends EventEmitter {
 
   async connect(): Promise<void> {
     if (this.socket && !this.socket.destroyed) return
+    const startedAt = Date.now()
+    let lastError: Error | null = null
+    while (Date.now() - startedAt < 10000) {
+      try {
+        await this.connectOnce()
+        return
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+    }
+    throw new Error(`Gagal menghubungkan SION Presentation Agent: ${lastError?.message ?? 'Agent tidak merespons.'}`)
+  }
+
+  private async connectOnce(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       const socket = net.createConnection(getCurrentUserPipePath())
-      const timer = setTimeout(() => {
+      let settled = false
+      const fail = (error: Error) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
         socket.destroy()
-        reject(new Error('Timeout menghubungkan SION Presentation Agent.'))
-      }, 6000)
+        reject(error)
+      }
+      const timer = setTimeout(() => {
+        fail(new Error('Timeout menghubungkan SION Presentation Agent.'))
+      }, 1500)
       socket.once('connect', () => {
+        if (settled) return
+        settled = true
         clearTimeout(timer)
         this.socket = socket
+        socket.on('close', () => this.emit('disconnect'))
         resolve()
       })
-      socket.once('error', reject)
+      socket.once('error', fail)
       socket.on('data', (chunk) => this.onData(chunk))
-      socket.on('close', () => this.emit('disconnect'))
     })
   }
 

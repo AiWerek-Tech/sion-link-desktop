@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, globalShortcut, nativeTheme } from 'electr
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
-import { spawn } from 'child_process'
+import { execFileSync, spawn } from 'child_process'
 import { randomBytes } from 'crypto'
 import { PowerPointBridgeController } from './powerpoint/PowerPointBridgeController'
 import type { PresentationBridgeStatus as AgentPresentationBridgeStatus } from './powerpoint/types'
@@ -49,6 +49,7 @@ interface PresentationBridgeStatus {
   message: string
   slideIndex?: number
   totalSlides?: number
+  previewDataUrl?: string
   updatedAt: number
 }
 
@@ -89,6 +90,7 @@ function emitAgentBridgeStatus(status: AgentPresentationBridgeStatus): void {
       : status.message,
     slideIndex: status.slideIndex,
     totalSlides: status.totalSlides,
+    previewDataUrl: status.previewDataUrl,
     updatedAt: status.updatedAt
   }
   mainWindow?.webContents.send('presentation-bridge:status', presentationBridgeStatus)
@@ -120,6 +122,44 @@ function friendlyPowerPointError(error: unknown): string {
   const clean = message.replace(/#< CLIXML[\s\S]*/i, '').trim()
   if (/null-valued|CurrentShowPosition|Slides\.Item/i.test(message)) return 'Slide Show berubah atau belum siap. Jalankan kembali Slide Show lalu coba lagi.'
   return clean || 'Bridge gagal menyinkronkan PowerPoint.'
+}
+
+function getPresentationDiagnostics(): Record<string, unknown> {
+  const diagnostics: Record<string, unknown> = {
+    osArchitecture: os.arch(),
+    appArchitecture: process.arch,
+    agentArchitecture: 'win-x64',
+    powerPointPath: null,
+    powerPointVersion: null,
+    inferredOfficeArchitecture: null,
+    officeX86Validated: false
+  }
+  if (process.platform !== 'win32') return diagnostics
+  try {
+    const output = execFileSync(
+      'powershell.exe',
+      [
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-Command',
+        '$p=Get-Process POWERPNT -ErrorAction SilentlyContinue | Select-Object -First 1; if($p){$app=$null; try{$app=[Runtime.InteropServices.Marshal]::GetActiveObject("PowerPoint.Application")}catch{}; [pscustomobject]@{Path=$p.Path; Version=if($app){$app.Version}else{$null}} | ConvertTo-Json -Compress}'
+      ],
+      { windowsHide: true, encoding: 'utf8' }
+    ).trim()
+    if (!output) return diagnostics
+    const parsed = JSON.parse(output) as { Path?: string; Version?: string }
+    diagnostics.powerPointPath = parsed.Path || null
+    diagnostics.powerPointVersion = parsed.Version || null
+    if (parsed.Path) {
+      diagnostics.inferredOfficeArchitecture = /Program Files \(x86\)/i.test(parsed.Path)
+        ? 'x86'
+        : /Program Files/i.test(parsed.Path)
+          ? 'x64'
+          : 'unknown'
+    }
+  } catch {}
+  return diagnostics
 }
 
 async function runPowerPointNavigation(command: 'NEXT' | 'PREV'): Promise<void> {
@@ -518,6 +558,7 @@ ipcMain.handle('get-startup-notice', () => {
   startupNotice = null
   return notice
 })
+ipcMain.handle('presentation-bridge:diagnostics', () => getPresentationDiagnostics())
 
 ipcMain.handle('scan-network', async (_event, port?: number) => {
   return scanNetwork(port)

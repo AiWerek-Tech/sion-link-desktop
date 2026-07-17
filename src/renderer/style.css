@@ -398,7 +398,7 @@ body {
   display: none;
   flex: 1;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 8px 0 18px;
   animation: tabIn var(--normal) var(--ease) both;
 }
 
@@ -1438,15 +1438,12 @@ form {
 /* ══ POWERPOINT ADVANCED DIAGNOSTICS ══ */
 .bridge-diagnostics {
   margin: 14px 0;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   background: var(--bg-card);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
@@ -1462,7 +1459,7 @@ form {
 
 .bridge-diagnostics label {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   font-size: 13px;
   font-weight: 600;
@@ -1471,6 +1468,12 @@ form {
   padding: 6px 8px;
   border-radius: var(--r-sm);
   transition: all var(--fast) var(--ease);
+}
+
+.bridge-diagnostics label span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
 .bridge-diagnostics label:hover {
@@ -1508,10 +1511,10 @@ form {
 }
 
 .bridge-diagnostics small {
-  margin-left: 6px;
+  margin-left: 0;
   font-size: 10px;
   font-weight: 700;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
   color: var(--text-3);
   padding: 2px 6px;
@@ -1529,6 +1532,363 @@ form {
   color: var(--text-3);
   padding-left: 4px;
   margin-top: 2px;
+}
+
+.bridge-diagnostics__detail {
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--text-3);
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.025);
+  word-break: break-word;
+}
+
+.bridge-diagnostics__detail.is-warning {
+  color: #fde68a;
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.bridge-hero--status {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(135deg, rgba(99, 102, 241, 0.14), rgba(14, 165, 233, 0.055)),
+    rgba(255, 255, 255, 0.035);
+}
+
+.bridge-hero__copy {
+  min-width: 0;
+}
+
+.bridge-kicker,
+.bridge-section-label {
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.bridge-hero__badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.bridge-badge,
+.bridge-engine-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-2);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.bridge-badge i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text-3);
+}
+
+.bridge-badge--sync {
+  color: #bbf7d0;
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.bridge-badge--sync i { background: #22c55e; }
+.bridge-badge--waiting i { background: #f59e0b; }
+.bridge-badge--idle i { background: #94a3b8; }
+
+.bridge-journey {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bridge-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-3);
+}
+
+.bridge-step b {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.bridge-step span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.bridge-step strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.bridge-step small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.bridge-step.is-complete {
+  color: #bbf7d0;
+  border-color: rgba(34, 197, 94, 0.22);
+  background: rgba(34, 197, 94, 0.07);
+}
+
+.bridge-step.is-complete b {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.16);
+}
+
+.bridge-step.is-current {
+  color: #bfdbfe;
+  border-color: rgba(59, 130, 246, 0.28);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.bridge-step.is-warning,
+.bridge-step.is-failed {
+  color: #fde68a;
+  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(245, 158, 11, 0.09);
+}
+
+.bridge-step.is-disabled {
+  opacity: 0.58;
+}
+
+.bridge-live-card {
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bridge-live-card__preview {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.72));
+}
+
+.bridge-live-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  object-fit: contain;
+  background: #020617;
+}
+
+.bridge-live-card__preview.has-image .bridge-live-card__image {
+  display: block;
+}
+
+.bridge-live-card__preview.has-image .bridge-live-card__placeholder {
+  display: none;
+}
+
+.bridge-live-card__placeholder {
+  position: relative;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  color: var(--text-3);
+  font-size: 11px;
+  text-align: center;
+}
+
+.bridge-live-card__placeholder svg {
+  width: 34px;
+  height: 34px;
+  opacity: 0.62;
+}
+
+.bridge-live-card__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.bridge-live-card__body h3 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.bridge-live-card__body p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.bridge-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.bridge-metrics span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 10px;
+  color: var(--text-2);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bridge-recovery-card {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  border-radius: var(--r-md);
+  background: rgba(59, 130, 246, 0.075);
+}
+
+.bridge-recovery-card.is-ok {
+  border-color: rgba(34, 197, 94, 0.22);
+  background: rgba(34, 197, 94, 0.07);
+}
+
+.bridge-recovery-card.is-warning {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.09);
+}
+
+.bridge-recovery-card strong {
+  font-size: 13px;
+}
+
+.bridge-recovery-card span {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.bridge-recovery-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.mini-action {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mini-action:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.bridge-diagnostics {
+  overflow: visible;
+}
+
+.bridge-diagnostics__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.bridge-diagnostics[open] .bridge-diagnostics__summary {
+  margin-bottom: 10px;
+}
+
+.bridge-diagnostics__summary::-webkit-details-marker {
+  display: none;
+}
+
+.bridge-diagnostics__summary small {
+  display: block;
+  margin-left: 0;
+  margin-top: 3px;
+  background: transparent;
+  padding: 0;
+}
+
+.bridge-diagnostics__chevron {
+  color: var(--text-3);
+  transition: transform var(--fast) var(--ease);
+}
+
+.bridge-diagnostics[open] .bridge-diagnostics__chevron {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 720px) {
+  .bridge-hero--status,
+  .bridge-live-card {
+    grid-template-columns: 1fr;
+  }
+
+  .bridge-hero__badges {
+    align-items: flex-start;
+  }
+
+  .bridge-journey {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 580px) {

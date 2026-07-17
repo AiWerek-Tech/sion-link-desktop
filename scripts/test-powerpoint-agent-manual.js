@@ -97,6 +97,44 @@ function getPowerPointStats() {
   }
 }
 
+function getOfficeDiagnostics() {
+  const diagnostics = {
+    osArchitecture: process.env.PROCESSOR_ARCHITECTURE || process.arch,
+    nodeArchitecture: process.arch,
+    agentRuntime: 'win-x64',
+    powerPointPath: null,
+    powerPointVersion: null,
+    inferredOfficeArchitecture: null,
+    officeX86Validated: false
+  }
+  try {
+    const output = execFileSync(
+      'powershell.exe',
+      [
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-Command',
+        '$p=Get-Process POWERPNT -ErrorAction SilentlyContinue | Select-Object -First 1; if($p){$app=$null; try{$app=[Runtime.InteropServices.Marshal]::GetActiveObject("PowerPoint.Application")}catch{}; [pscustomobject]@{Path=$p.Path; Version=if($app){$app.Version}else{$null}} | ConvertTo-Json -Compress}'
+      ],
+      { windowsHide: true, encoding: 'utf8' }
+    ).trim()
+    if (output) {
+      const parsed = JSON.parse(output)
+      diagnostics.powerPointPath = parsed.Path || null
+      diagnostics.powerPointVersion = parsed.Version || null
+      if (typeof parsed.Path === 'string') {
+        diagnostics.inferredOfficeArchitecture = /Program Files \(x86\)/i.test(parsed.Path)
+          ? 'x86'
+          : /Program Files/i.test(parsed.Path)
+            ? 'x64'
+            : 'unknown'
+      }
+    }
+  } catch {}
+  return diagnostics
+}
+
 function collectRuntimeSample(commandNumber, agentPid, metrics) {
   const recentCommands = metrics.commandLatencies.slice(-50)
   const recentFrames = metrics.frameLatencies.slice(-50)
@@ -291,6 +329,7 @@ async function main() {
     },
     commandFailures,
     reconnectCount: messages.filter((entry) => entry.message.messageType === 'SESSION_RESET').length,
+    officeDiagnostics: getOfficeDiagnostics(),
     soakSamples,
     commandAckCount: messages.filter((entry) => entry.message.messageType === 'COMMAND_ACK').length,
     commandAck: plan === 'soak'

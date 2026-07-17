@@ -189,22 +189,71 @@
       </div>
 
       <div class="tab-content" id="tab-bridge">
-        <section class="bridge-hero">
+        <section class="bridge-hero bridge-hero--status">
           <img class="bridge-hero__logo" src="powerpoint-logo.webp" alt="PowerPoint Logo">
-          <div><h2>PowerPoint Bridge</h2><p>Kirim slide aktif dan speaker notes langsung ke SION Media.</p></div>
+          <div class="bridge-hero__copy">
+            <span class="bridge-kicker">Presentation Bridge</span>
+            <h2>PowerPoint Bridge</h2>
+            <p>Hubungkan presentasi pemateri ke SION Media secara real-time.</p>
+          </div>
+          <div class="bridge-hero__badges" aria-live="polite">
+            <span id="bridge-main-badge" class="bridge-badge bridge-badge--idle"><i></i> Belum aktif</span>
+            <span id="bridge-engine-badge" class="bridge-engine-badge">Modern .NET Agent</span>
+          </div>
         </section>
-        <div class="bridge-steps">
-          <div><b>1</b><span>Jalankan Slide Show di Microsoft PowerPoint.</span></div>
-          <div><b>2</b><span>Pilih server SION Media di tab Koneksi, lalu klik Mulai.</span></div>
-          <div><b>3</b><span>Operator menyetujui permintaan pada panel PPT SION Media.</span></div>
+
+        <div class="bridge-journey" aria-label="Status koneksi PowerPoint Bridge">
+          <div class="bridge-step" data-step="agent"><b>1</b><span><strong>Agent siap</strong><small>SION PowerPoint Agent berjalan</small></span></div>
+          <div class="bridge-step" data-step="powerpoint"><b>2</b><span><strong>PowerPoint ditemukan</strong><small>Buka PowerPoint desktop</small></span></div>
+          <div class="bridge-step" data-step="slideshow"><b>3</b><span><strong>Slide Show aktif</strong><small>Tekan F5 jika belum aktif</small></span></div>
+          <div class="bridge-step" data-step="media"><b>4</b><span><strong>SION Media ditemukan</strong><small>Server operator dapat dijangkau</small></span></div>
+          <div class="bridge-step" data-step="approval"><b>5</b><span><strong>Disetujui operator</strong><small>Menunggu approval dari SION Media</small></span></div>
+          <div class="bridge-step" data-step="sync"><b>6</b><span><strong>Sinkron real-time</strong><small>Slide dikirim tanpa polling PowerShell</small></span></div>
         </div>
-        <div class="bridge-status is-waiting">Kontrol Preview dan Live tetap berada di tangan operator SION Media.</div>
-        <div class="bridge-diagnostics">
+
+        <div class="bridge-live-card">
+          <div class="bridge-live-card__preview">
+            <img id="bridge-preview-image" class="bridge-live-card__image" alt="Preview slide PowerPoint saat ini">
+            <div class="bridge-live-card__placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>
+              <span id="bridge-preview-text">Belum ada slide aktif</span>
+            </div>
+          </div>
+          <div class="bridge-live-card__body">
+            <span class="bridge-section-label">Presentasi saat ini</span>
+            <h3 id="bridge-deck-title">Menunggu PowerPoint</h3>
+            <p id="bridge-slide-summary">Mulai Slide Show untuk mengirim slide ke SION Media.</p>
+            <div class="bridge-metrics">
+              <span id="bridge-sync-state">Belum sinkron</span>
+              <span id="bridge-latency-state">Latency —</span>
+              <span id="bridge-cache-state">Cache —</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="bridge-recovery-card" class="bridge-recovery-card" role="status" aria-live="polite">
+          <strong>Siap memulai bridge</strong>
+          <span>Pilih server SION Media di tab Koneksi, buka Slide Show PowerPoint, lalu tekan Mulai.</span>
+          <div class="bridge-recovery-card__actions">
+            <button type="button" class="mini-action" data-open-tab="scan">Cari SION Media</button>
+            <button type="button" class="mini-action" data-open-tab="connect">Atur Koneksi</button>
+          </div>
+        </div>
+
+        <details class="bridge-diagnostics">
+          <summary class="bridge-diagnostics__summary">
+            <span>
+              <span class="bridge-diagnostics__title">Advanced Diagnostics</span>
+              <small>Untuk troubleshooting dan fallback</small>
+            </span>
+            <span class="bridge-diagnostics__chevron">v</span>
+          </summary>
           <div class="bridge-diagnostics__title">Advanced Diagnostics</div>
-          <label><input type="radio" name="bridge-engine" value="dotnet_agent" checked> Modern .NET Agent <small>Recommended</small></label>
-          <label><input type="radio" name="bridge-engine" value="legacy_powershell"> Legacy PowerShell <small>Compatibility mode</small></label>
+          <label><input type="radio" name="bridge-engine" value="dotnet_agent" checked> <span><strong>Modern .NET Agent</strong><small>Direkomendasikan. Lebih cepat dan stabil.</small></span></label>
+          <label><input type="radio" name="bridge-engine" value="legacy_powershell"> <span><strong>Legacy PowerShell</strong><small>Mode kompatibilitas. Lebih lambat.</small></span></label>
           <p>Compatibility mode lebih lambat dan hanya digunakan jika Agent modern tidak dapat berjalan.</p>
-        </div>
+          <div id="bridge-diagnostics-detail" class="bridge-diagnostics__detail">Mendeteksi Office...</div>
+        </details>
         <button type="button" id="bridge-btn" class="btn-connect">
           <span class="btn-connect__text">Mulai PowerPoint Bridge</span>
         </button>

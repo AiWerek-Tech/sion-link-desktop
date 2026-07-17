@@ -23,6 +23,17 @@ const statusDot = $('status-dot')
 const statusText = $('status-text')
 const bridgeBtn = $('bridge-btn')
 const bridgeStatus = $('bridge-status')
+const bridgeDiagnosticsDetail = $('bridge-diagnostics-detail')
+const bridgeMainBadge = $('bridge-main-badge')
+const bridgeEngineBadge = $('bridge-engine-badge')
+const bridgeDeckTitle = $('bridge-deck-title')
+const bridgeSlideSummary = $('bridge-slide-summary')
+const bridgeSyncState = $('bridge-sync-state')
+const bridgeLatencyState = $('bridge-latency-state')
+const bridgeCacheState = $('bridge-cache-state')
+const bridgePreviewText = $('bridge-preview-text')
+const bridgePreviewImage = $('bridge-preview-image')
+const bridgeRecoveryCard = $('bridge-recovery-card')
 const bridgeEngineInputs = () => Array.from(document.querySelectorAll('input[name="bridge-engine"]'))
 const detectedServer = $('detected-server')
 const detectedName = $('detected-name')
@@ -65,12 +76,14 @@ const api = window.sionLink || {
   onScanProgress: () => () => {},
   startPresentationBridge: async () => ({ ok: false, error: 'Mode simulasi.' }),
   stopPresentationBridge: async () => ({ active: false }),
+  getPresentationDiagnostics: async () => null,
   onPresentationBridgeStatus: () => () => {}
 }
 
 let bridgeActive = false
 api.onPresentationBridgeStatus?.((status) => {
   bridgeActive = status.active === true
+  updateBridgeStatusCenter(status)
   bridgeBtn.querySelector('.btn-connect__text').textContent = bridgeActive ? 'Hentikan PowerPoint Bridge' : 'Mulai PowerPoint Bridge'
   bridgeStatus.textContent = status.slideIndex >= 0 ? `${status.message} · Slide ${status.slideIndex + 1}/${status.totalSlides}` : status.message
   bridgeStatus.classList.toggle('is-connected', status.connected === true)
@@ -89,6 +102,80 @@ api.onPresentationBridgeStatus?.((status) => {
     }
   }
 })
+
+function setBridgeStep(name, state) {
+  const node = document.querySelector(`.bridge-step[data-step="${name}"]`)
+  if (!node) return
+  node.classList.remove('is-complete', 'is-current', 'is-warning', 'is-failed', 'is-disabled')
+  node.classList.add(`is-${state}`)
+}
+
+function updateBridgeStatusCenter(status = {}) {
+  const active = status.active === true
+  const connected = status.connected === true
+  const engine = status.engine === 'legacy_powershell' ? 'Legacy PowerShell' : 'Modern .NET Agent'
+  const message = status.message || 'Bridge belum aktif.'
+  const slideIndex = Number(status.slideIndex ?? -1)
+  const totalSlides = Number(status.totalSlides ?? 0)
+  const isWaitingApproval = /persetujuan|approval|operator/i.test(message)
+  const isPowerPointProblem = /PowerPoint|Slide Show|F5/i.test(message) && !connected
+
+  if (bridgeEngineBadge) bridgeEngineBadge.textContent = engine
+  if (bridgeMainBadge) {
+    bridgeMainBadge.className = `bridge-badge ${connected ? 'bridge-badge--sync' : active ? 'bridge-badge--waiting' : 'bridge-badge--idle'}`
+    bridgeMainBadge.innerHTML = `<i></i> ${connected ? 'Sinkron' : active ? 'Menunggu' : 'Belum aktif'}`
+  }
+
+  setBridgeStep('agent', active || connected ? 'complete' : 'current')
+  setBridgeStep('powerpoint', connected ? 'complete' : isPowerPointProblem ? 'warning' : active ? 'current' : 'disabled')
+  setBridgeStep('slideshow', connected ? 'complete' : isPowerPointProblem ? 'warning' : active ? 'current' : 'disabled')
+  setBridgeStep('media', active || connected ? 'complete' : 'current')
+  setBridgeStep('approval', connected ? 'complete' : isWaitingApproval ? 'current' : active ? 'current' : 'disabled')
+  setBridgeStep('sync', connected ? 'complete' : active ? 'current' : 'disabled')
+
+  if (bridgeDeckTitle) bridgeDeckTitle.textContent = connected ? 'PowerPoint Live' : active ? 'Menunggu sinkronisasi' : 'Menunggu PowerPoint'
+  if (bridgeSlideSummary) {
+    bridgeSlideSummary.textContent =
+      slideIndex >= 0 && totalSlides > 0
+        ? `Slide ${slideIndex + 1} dari ${totalSlides}`
+        : message
+  }
+  if (bridgePreviewText) bridgePreviewText.textContent = slideIndex >= 0 ? `Slide ${slideIndex + 1}/${totalSlides || '?'}` : 'Belum ada slide aktif'
+  if (bridgePreviewImage) {
+    const previewFrame = typeof status.previewDataUrl === 'string' && status.previewDataUrl.startsWith('data:image/')
+      ? status.previewDataUrl
+      : ''
+    const previewShell = bridgePreviewImage.closest('.bridge-live-card__preview')
+    if (previewFrame) {
+      bridgePreviewImage.src = previewFrame
+      previewShell?.classList.add('has-image')
+    } else if (!connected) {
+      bridgePreviewImage.removeAttribute('src')
+      previewShell?.classList.remove('has-image')
+    }
+  }
+  if (bridgeSyncState) bridgeSyncState.textContent = connected ? 'Sinkron real-time' : active ? 'Menyambungkan' : 'Belum sinkron'
+  if (bridgeLatencyState) bridgeLatencyState.textContent = status.latencyMs ? `${status.latencyMs} ms` : 'Latency —'
+  if (bridgeCacheState) bridgeCacheState.textContent = status.cacheHit === true ? 'Cache siap' : 'Cache —'
+
+  if (bridgeRecoveryCard) {
+    const title = bridgeRecoveryCard.querySelector('strong')
+    const body = bridgeRecoveryCard.querySelector('span')
+    if (connected) {
+      bridgeRecoveryCard.className = 'bridge-recovery-card is-ok'
+      if (title) title.textContent = 'Sinkronisasi aktif'
+      if (body) body.textContent = 'Slide PowerPoint sedang dikirim ke SION Media. Operator tetap mengontrol Preview dan Live.'
+    } else if (active) {
+      bridgeRecoveryCard.className = isPowerPointProblem ? 'bridge-recovery-card is-warning' : 'bridge-recovery-card'
+      if (title) title.textContent = isPowerPointProblem ? 'PowerPoint perlu perhatian' : 'Menunggu koneksi selesai'
+      if (body) body.textContent = message
+    } else {
+      bridgeRecoveryCard.className = 'bridge-recovery-card'
+      if (title) title.textContent = 'Siap memulai bridge'
+      if (body) body.textContent = 'Pilih server SION Media di tab Koneksi, buka Slide Show PowerPoint, lalu tekan Mulai.'
+    }
+  }
+}
 
 bridgeBtn.addEventListener('click', async () => {
   hideError()
@@ -110,6 +197,27 @@ bridgeBtn.addEventListener('click', async () => {
 // ══════════════════════════════════
 // TABS
 // ══════════════════════════════════
+async function refreshPresentationDiagnostics() {
+  if (!bridgeDiagnosticsDetail) return
+  try {
+    const diagnostics = await api.getPresentationDiagnostics?.()
+    if (!diagnostics) {
+      bridgeDiagnosticsDetail.textContent = 'Diagnostics tidak tersedia.'
+      return
+    }
+    const officeArch = diagnostics.inferredOfficeArchitecture || 'unknown'
+    const version = diagnostics.powerPointVersion ? ` · PowerPoint ${diagnostics.powerPointVersion}` : ''
+    const pptPath = diagnostics.powerPointPath ? ` · ${diagnostics.powerPointPath}` : ''
+    bridgeDiagnosticsDetail.textContent = `OS ${diagnostics.osArchitecture || '-'} · App ${diagnostics.appArchitecture || '-'} · Office ${officeArch}${version}${pptPath}`
+    bridgeDiagnosticsDetail.classList.toggle('is-warning', officeArch === 'x86')
+    if (officeArch === 'x86') {
+      bridgeDiagnosticsDetail.textContent += ' · Microsoft Office 32-bit terdeteksi. Dukungan tersedia secara desain tetapi belum tervalidasi penuh pada beta ini.'
+    }
+  } catch {
+    bridgeDiagnosticsDetail.textContent = 'Diagnostics Office belum dapat dibaca.'
+  }
+}
+
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     const target = tab.dataset.tab
@@ -120,6 +228,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 
     // Lazy load
     if (target === 'history') loadHistory()
+    if (target === 'bridge') refreshPresentationDiagnostics()
     if (target === 'scan') {
       loadLocalIp()
       if (!isScanning) {
@@ -133,6 +242,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 // INIT
 // ══════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  refreshPresentationDiagnostics()
   try {
     const notice = await api.getStartupNotice()
     if (notice) showError(notice)
@@ -187,6 +297,13 @@ detectedServer.addEventListener('click', () => {
   ipInput.value = detectedServer.dataset.ip || ''
   portInput.value = detectedServer.dataset.port || '41732'
   codeInput.focus()
+})
+
+document.querySelectorAll('[data-open-tab]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const tabName = button.dataset.openTab
+    document.querySelector(`.tab[data-tab="${tabName}"]`)?.click()
+  })
 })
 
 ipInput.addEventListener('paste', (event) => {
